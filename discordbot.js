@@ -1,13 +1,13 @@
 import { Client, GatewayIntentBits } from 'discord.js';
 import { REST, Routes } from 'discord.js';
 
-const weather = require('weather-js');
+import weather from 'weather-js';
+
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
 const TOKEN = process.env.TOKEN;
 const CLIENT_ID = process.env.CLIENT_ID;
-console.log(process.env.USER);
 
 const commands = [
     {
@@ -15,16 +15,16 @@ const commands = [
       description: 'Replies with Pong!',
     },
     {
-        name: 'weather',
-        description: 'Returns the weather for a specified city',
-        options: [
-            {
-                name: 'city',
-                description: 'City name',
-                type: 'STRING',
-                required: true,
-            },
-        ],
+    name: 'weather',
+    description: 'Returns the weather for a specified city',
+    options: [
+        {
+            name: 'city',
+            description: 'City name',
+            type: 3, // String
+            required: true,
+        },
+    ],
     }
   ];
   
@@ -47,11 +47,34 @@ client.on('ready', () => {
 client.on('interactionCreate', async interaction => {
   if (!interaction.isChatInputCommand()) return;
 
-// ADD WEATHER COMMAND
+  const { commandName } = interaction;
 
-  if (interaction.commandName === 'ping') {
+  // ping command
+  if (commandName === 'ping') {
     await interaction.reply('Pong!');
   }
+
+  // weather comand
+  if (commandName === 'weather') {
+    const city = interaction.options.getString('city');
+
+    // Fetch weather data with weather-js
+    weather.find({ search: city, degreeType: 'F' }, function(err, result) {
+        if (err) {
+            console.log(err);
+            interaction.reply('Error occured while fetching weather data');
+        } else if (result && result[0]) {
+            const weatherData = result[0];
+            const reply = `Weather in ${weatherData.location.name}:
+            - Temperature: ${weatherData.current.temperature}°C
+            - Condition: ${weatherData.current.skytext}`;
+            interaction.reply(reply);
+        } else {
+            interaction.reply('No weather data found for ${city}');
+        }
+    });
+  }
+
 });
 
 client.login(TOKEN);
