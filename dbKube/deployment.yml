@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: discord-bot-deployment
+  namespace: discordbot
+  labels:
+    app: discord-bot
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: discord-bot
+  template:
+    metadata:
+      labels:
+        app: discord-bot
+    spec:
+      containers:
+      - name: discord-bot
+        image: docker.io/abreyaustin/discordbot:1.0
+        imagePullPolicy: Always
+        env:
+        - name: TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: discord-bot-secrets
+              key: TOKEN
+        - name: CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              name: discord-bot-secrets
+              key: CLIENT_ID
